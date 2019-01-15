@@ -15,8 +15,8 @@ const state = {
 updateCanvasDimentions();
 
 window.addEventListener('resize', updateCanvasDimentions);
-canvas.addEventListener('click', addPoint);
-buttonReset.addEventListener('click', resetPoints);
+canvas.addEventListener('click', addShapes);
+buttonReset.addEventListener('click', resetShapes);
 buttonAbout.addEventListener('click', toggleSectionAbout);
 
 class Point {
@@ -108,7 +108,7 @@ class Circle {
   }
 }
 
-function addPoint(event) {
+function addShapes(event) {
   if (state.points.length >= 3) return;
 
   state.points.push(new Point(event.pageX, event.pageY));
@@ -197,7 +197,7 @@ function renderInfoPanel() {
   }
 }
 
-function resetPoints() {
+function resetShapes() {
   state.points = [];
   state.parallelogram = null;
   state.circle = null;
