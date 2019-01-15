@@ -8,15 +8,74 @@
     body {
       margin: 0;
       height: 100%;
+      font-family: sans-serif;
     }
     canvas {
-      background: #f5f5f5;
+      background: #666;
       display: block;
+    }
+    .info-panel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 260px;
+      height: auto;
+      padding: 0 10px;
+      background: rgba(0, 0, 0, .5);
+      color: #fff;
+      max-height: 100%;
+      overflow: auto;
+    }
+    .info-panel__content {
+      padding-top: 10px;
+    }
+    .info-panel__content div {
+      margin-bottom: 10px;
+    }
+    .info-panel__buttons button {
+      width: 100%;
+      padding: 8px 0;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .info-panel__about li {
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+    .info-panel__about li:last-child {
+      margin-bottom: 0;
+    }
+    .info-panel__about p {
+      font-size: 16px;
+    }
+    .info-panel__about.hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
+  <canvas id="js-canvas"></canvas>
+  <div class="info-panel">
+    <div class="info-panel__content" id="js-info"></div>
+    <div class="info-panel__buttons">
+      <button id="js-reset">Reset</button>
+      <button id="js-about">About</button>
+    </div>
+    <div id="js-section-about" class="info-panel__about">
+      <p>This program is designed for drawing and interacting with geometrical shapes.</p>
+      <h4>HOW TO USE:</h4>
+      <ol>
+        <li>Click on the grey area three times to add three red dots.</li>
+        <li>After adding the last dot you will see a parallelogram and a circle.</li>
+        <li>You can change the position of the dots to see how the parallelogram and the circle get resized.</li>
+        <li>Click on the "Reset" button to remove all the dots and the shapes if you want to start over again</li>
+        <li>Click on the "About" button to see the description of this program.</li>
+      </ol>
+      <p>
+        <small>created by Mikita Lisavets ;)</small>
+      </p>
+    </div>
+  </div>
   <script src="main.js"></script>
 </body>
 </html>

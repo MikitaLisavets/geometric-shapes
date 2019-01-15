@@ -1,141 +1,217 @@
-const canvas = document.getElementById('canvas');
+const canvas = document.getElementById('js-canvas');
+const infoPanel = document.getElementById('js-info');
+const sectionAbout = document.getElementById('js-section-about');
+const buttonReset = document.getElementById('js-reset');
+const buttonAbout = document.getElementById('js-about');
+
 const ctx = canvas.getContext('2d');
+let currentActivePointIndex = -1;
 const state = {
   points:        [],
   parallelogram: null,
   circle:        null
-}
+};
 
-const pointColor = '#ff0000'
+updateCanvasDimentions();
 
-updateCanvasDimentions()
+window.addEventListener('resize', updateCanvasDimentions);
 canvas.addEventListener('click', addPoint);
-canvas.addEventListener('click', movePoint);
-
+buttonReset.addEventListener('click', resetPoints);
+buttonAbout.addEventListener('click', toggleSectionAbout);
 
 class Point {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.color = '#ff0000';
+    this.color = '#f00';
   }
 
-  draw() {
-    ctx.fillStyle = this.color;
+  render() {
     ctx.strokeStyle = this.color;
-    ctx.fillRect(this.x, this.y, 1, 1);
     ctx.beginPath();
-    ctx.arc(this.x, this.y, 10, 2 * Math.PI, 0);
+    ctx.arc(this.x, this.y, 5, 2 * Math.PI, 0);
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 }
 
 class Parallelogram {
-  constructor(points) {
-    this.points = points;
-    this.color = '#0000ff';
-    this.center = this.calculateCenterCoords()
+  constructor() {
+    this.color = '#00f';
   }
 
   calculateCenterCoords() {
     return {
-      x: (this.points[0].x + this.points[2].x) / 2,
-      y: (this.points[0].y + this.points[2].y) / 2
-    }
+      x: (state.points[0].x + state.points[2].x) / 2,
+      y: (state.points[0].y + state.points[2].y) / 2
+    };
   }
 
   calculateArea() {
-    const angle = findAngle(this.points[0], this.points[1], this.points[2])
-    const a = Math.sqrt( Math.pow((this.points[0].x - this.points[1].x), 2) + Math.pow((this.points[0].y - this.points[1].y), 2) );
-    const b = Math.sqrt( Math.pow((this.points[1].x - this.points[2].x), 2) + Math.pow((this.points[1].y - this.points[2].y), 2) );
+    const angle = findAngle(state.points[0], state.points[1], state.points[2]);
+    const sideA = Math.sqrt(Math.pow((state.points[0].x - state.points[1].x), 2)
+      + Math.pow((state.points[0].y - state.points[1].y), 2));
+    const sideB = Math.sqrt(Math.pow((state.points[1].x - state.points[2].x), 2)
+      + Math.pow((state.points[1].y - state.points[2].y), 2));
 
-    return Math.abs(Math.sin(angle)) * a * b
+    return sideA * sideB * Math.abs(Math.sin(angle));
 
-    function findAngle(p0,p1,p2) {
-      var b = Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2),
-          a = Math.pow(p1.x-p2.x,2) + Math.pow(p1.y-p2.y,2),
-          c = Math.pow(p2.x-p0.x,2) + Math.pow(p2.y-p0.y,2);
-      return Math.acos( (a+b-c) / Math.sqrt(4*a*b) );
+    function findAngle(point0, point1, point2) {
+      var line01 = Math.pow(point1.x - point0.x, 2) + Math.pow(point1.y - point0.y, 2),
+        line12 = Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2),
+        line20 = Math.pow(point2.x - point0.x, 2) + Math.pow(point2.y - point0.y, 2);
+      return Math.acos((line01 + line12 - line20) / Math.sqrt(4 * line01 * line12));
     }
   }
 
-  draw() {
+  render() {
+    const center = this.calculateCenterCoords();
     const lastPoint = {
-      x: this.center.x - (this.points[1].x - this.center.x),
-      y: this.center.y - (this.points[1].y - this.center.y)
-    }
-    
+      x: center.x - (state.points[1].x - center.x),
+      y: center.y - (state.points[1].y - center.y)
+    };
+
     ctx.strokeStyle = this.color;
     ctx.beginPath();
-    ctx.moveTo(this.points[0].x, this.points[0].y);
-    for (let i = 1; i < this.points.length; i++) {
-      ctx.lineTo(this.points[i].x, this.points[i].y);
+    ctx.moveTo(state.points[0].x, state.points[0].y);
+    for (let i = 1; i < state.points.length; i++) {
+      ctx.lineTo(state.points[i].x, state.points[i].y);
     }
     ctx.lineTo(lastPoint.x, lastPoint.y);
-    ctx.lineTo(this.points[0].x, this.points[0].y);
+    ctx.lineTo(state.points[0].x, state.points[0].y);
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 }
 
 class Circle {
-  constructor(points, parallelogram) {
-    this.points = points;
-    this.color = '#dddd00';
-    this.center = parallelogram.center
-    this.radius = Math.sqrt(parallelogram.calculateArea() / Math.PI)
+  constructor() {
+    this.color = '#ff0';
   }
 
-  draw() {
+  getArea() {
+    return state.parallelogram.calculateArea();
+  }
+
+  getCenterCoords() {
+    return state.parallelogram.calculateCenterCoords();
+  }
+
+  render() {
+    const center = state.parallelogram.calculateCenterCoords();
+    const radius = Math.sqrt(state.parallelogram.calculateArea() / Math.PI);
     ctx.strokeStyle = this.color;
     ctx.beginPath();
-    console.log(this.radius)
-    ctx.arc(this.center.x, this.center.y, this.radius, 2 * Math.PI, 0);
+    ctx.arc(center.x, center.y, radius, 2 * Math.PI, 0);
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 }
 
 function addPoint(event) {
-  if (state.points.length >= 3) return
-  
-  state.points.push(new Point(event.pageX, event.pageY))
-  if (state.points.length === 3) {
-    state.parallelogram = new Parallelogram(state.points)
-    state.circle = new Circle(state.points, state.parallelogram)
-  }
+  if (state.points.length >= 3) return;
 
-  draw();
+  state.points.push(new Point(event.pageX, event.pageY));
+  if (state.points.length === 3) {
+    state.parallelogram = new Parallelogram(state.points);
+    state.circle = new Circle();
+    canvas.addEventListener('mousedown', startMovePoint);
+  }
+  render();
+}
+
+function startMovePoint(event) {
+  const pageX = event.pageX;
+  const pageY = event.pageY;
+  const threshold = 10;
+  currentActivePointIndex = state.points.findIndex((point) => {
+    return point.x >= pageX - threshold
+      && point.x <= pageX + threshold
+      && point.y >= pageY - threshold
+      && point.y <= pageY + threshold;
+  });
+  if (currentActivePointIndex < 0) return;
+  canvas.addEventListener('mousemove', movePoint);
+  canvas.addEventListener('mouseup', stopMovePoint);
+}
+
+function stopMovePoint() {
+  canvas.removeEventListener('mousemove', movePoint);
+  canvas.removeEventListener('mouseup', stopMovePoint);
+  currentActivePointIndex = -1;
 }
 
 function movePoint(event) {
-
+  state.points[currentActivePointIndex].x = event.pageX;
+  state.points[currentActivePointIndex].y = event.pageY;
+  render();
 }
 
 function updateCanvasDimentions() {
   canvas.width = document.body.clientWidth;
   canvas.height = document.body.clientHeight;
+  render();
 }
 
-function drawPoints() {
-  if (!state.points.length) return
-  state.points.forEach((point) => { point.draw() })
+function renderPoints() {
+  if (!state.points.length) return;
+  state.points.forEach((point) => { point.render(); });
 }
 
-function drawParallelogram() {
-  if (!state.parallelogram) return
-  state.parallelogram.draw()
+function renderParallelogram() {
+  if (!state.parallelogram) return;
+  state.parallelogram.render();
 }
 
-function drawCircle() {
-  if (!state.circle) return
-  state.circle.draw()
+function renderCircle() {
+  if (!state.circle) return;
+  state.circle.render();
 }
 
-function draw() {
+function renderInfoPanel() {
+  let infoPanelContent = `
+    ${state.points.map((point, index) => {
+      return pointTemplate('Point' + (index + 1), point.x, point.y);
+    }).join('')}
+    ${ state.parallelogram
+      ? shapeTemplate('Parallelogram', state.parallelogram.calculateArea(), state.parallelogram.calculateCenterCoords())
+      : ''
+    }
+    ${ state.circle
+      ? shapeTemplate('Circle', state.circle.getArea(), state.circle.getCenterCoords())
+      : ''
+    }
+  `;
+
+  infoPanel.innerHTML = infoPanelContent;
+
+  function pointTemplate(name, x, y) {
+    return `<div>${name}: x = ${x} y = ${y}</div>`;
+  }
+  function shapeTemplate(name, area, centerCoords) {
+    return `<div>
+      ${name}: S = ${area.toFixed(0)} px<sup>2</sup>
+      <br>
+      center x = ${centerCoords.x.toFixed(1)} y = ${centerCoords.y.toFixed(1)}
+    </div>`;
+  }
+}
+
+function resetPoints() {
+  state.points = [];
+  state.parallelogram = null;
+  state.circle = null;
+  render();
+}
+
+function toggleSectionAbout() {
+  sectionAbout.classList.toggle('hidden');
+}
+
+function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawPoints()
-  drawParallelogram()
-  drawCircle()
+  renderPoints();
+  renderParallelogram();
+  renderCircle();
+  renderInfoPanel();
 }
