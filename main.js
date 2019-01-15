@@ -49,7 +49,8 @@ class Parallelogram {
     const angle = findAngle(this.points[0], this.points[1], this.points[2])
     const a = Math.sqrt( Math.pow((this.points[0].x - this.points[1].x), 2) + Math.pow((this.points[0].y - this.points[1].y), 2) );
     const b = Math.sqrt( Math.pow((this.points[1].x - this.points[2].x), 2) + Math.pow((this.points[1].y - this.points[2].y), 2) );
-    return angle
+
+    return Math.abs(Math.sin(angle)) * a * b
 
     function findAngle(p0,p1,p2) {
       var b = Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2),
@@ -81,24 +82,16 @@ class Parallelogram {
 class Circle {
   constructor(points, parallelogram) {
     this.points = points;
-    this.color = '#000000';
+    this.color = '#dddd00';
     this.center = parallelogram.center
-    console.log(parallelogram.calculateArea())
+    this.radius = Math.sqrt(parallelogram.calculateArea() / Math.PI)
   }
 
   draw() {
     ctx.strokeStyle = this.color;
     ctx.beginPath();
-    const maxCoord = this.points.reduce((acc, point) => {
-      const x = Math.abs(this.center.x - point.x)
-      const y = Math.abs(this.center.y - point.y)
-
-      acc.x = x > acc.x ? x : acc.x;
-      acc.y = y > acc.y ? y : acc.y;
-      return acc
-    }, { x: 0, y: 0 })
-
-    ctx.arc(this.center.x, this.center.y, Math.max(maxCoord.x, maxCoord.y), 2 * Math.PI, 0);
+    console.log(this.radius)
+    ctx.arc(this.center.x, this.center.y, this.radius, 2 * Math.PI, 0);
     ctx.lineWidth = 1;
     ctx.stroke();
   }
