@@ -35,13 +35,27 @@ class Parallelogram {
   constructor(points) {
     this.points = points;
     this.color = '#0000ff';
-    this.center = this.calcCenterCoords(points)
+    this.center = this.calculateCenterCoords()
   }
 
-  calcCenterCoords(points) {
+  calculateCenterCoords() {
     return {
-      x: (points[0].x + points[2].x) / 2,
-      y: (points[0].y + points[2].y) / 2
+      x: (this.points[0].x + this.points[2].x) / 2,
+      y: (this.points[0].y + this.points[2].y) / 2
+    }
+  }
+
+  calculateArea() {
+    const angle = findAngle(this.points[0], this.points[1], this.points[2])
+    const a = Math.sqrt( Math.pow((this.points[0].x - this.points[1].x), 2) + Math.pow((this.points[0].y - this.points[1].y), 2) );
+    const b = Math.sqrt( Math.pow((this.points[1].x - this.points[2].x), 2) + Math.pow((this.points[1].y - this.points[2].y), 2) );
+    return angle
+
+    function findAngle(p0,p1,p2) {
+      var b = Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2),
+          a = Math.pow(p1.x-p2.x,2) + Math.pow(p1.y-p2.y,2),
+          c = Math.pow(p2.x-p0.x,2) + Math.pow(p2.y-p0.y,2);
+      return Math.acos( (a+b-c) / Math.sqrt(4*a*b) );
     }
   }
 
@@ -69,6 +83,7 @@ class Circle {
     this.points = points;
     this.color = '#000000';
     this.center = parallelogram.center
+    console.log(parallelogram.calculateArea())
   }
 
   draw() {
@@ -82,8 +97,6 @@ class Circle {
       acc.y = y > acc.y ? y : acc.y;
       return acc
     }, { x: 0, y: 0 })
-
-    console.log(maxCoord)
 
     ctx.arc(this.center.x, this.center.y, Math.max(maxCoord.x, maxCoord.y), 2 * Math.PI, 0);
     ctx.lineWidth = 1;
