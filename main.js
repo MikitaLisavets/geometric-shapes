@@ -13,9 +13,6 @@ canvas.addEventListener('click', addPoint);
 canvas.addEventListener('click', movePoint);
 
 
-// window.addEventListener('resize', updateCanvasDimentions)
-
-
 class Point {
   constructor(x, y) {
     this.x = x;
@@ -38,9 +35,13 @@ class Parallelogram {
   constructor(points) {
     this.points = points;
     this.color = '#0000ff';
-    this.center = {
-      x: (this.points[0].x + this.points[2].x) / 2,
-      y: (this.points[0].y + this.points[2].y) / 2
+    this.center = this.calcCenterCoords(points)
+  }
+
+  calcCenterCoords(points) {
+    return {
+      x: (points[0].x + points[2].x) / 2,
+      y: (points[0].y + points[2].y) / 2
     }
   }
 
@@ -49,7 +50,7 @@ class Parallelogram {
       x: this.center.x - (this.points[1].x - this.center.x),
       y: this.center.y - (this.points[1].y - this.center.y)
     }
-
+    
     ctx.strokeStyle = this.color;
     ctx.beginPath();
     ctx.moveTo(this.points[0].x, this.points[0].y);
@@ -63,13 +64,40 @@ class Parallelogram {
   }
 }
 
+class Circle {
+  constructor(points, parallelogram) {
+    this.points = points;
+    this.color = '#000000';
+    this.center = parallelogram.center
+  }
+
+  draw() {
+    ctx.strokeStyle = this.color;
+    ctx.beginPath();
+    const maxCoord = this.points.reduce((acc, point) => {
+      const x = Math.abs(this.center.x - point.x)
+      const y = Math.abs(this.center.y - point.y)
+
+      acc.x = x > acc.x ? x : acc.x;
+      acc.y = y > acc.y ? y : acc.y;
+      return acc
+    }, { x: 0, y: 0 })
+
+    console.log(maxCoord)
+
+    ctx.arc(this.center.x, this.center.y, Math.max(maxCoord.x, maxCoord.y), 2 * Math.PI, 0);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
 function addPoint(event) {
   if (state.points.length >= 3) return
   
   state.points.push(new Point(event.pageX, event.pageY))
   if (state.points.length === 3) {
     state.parallelogram = new Parallelogram(state.points)
-    // state.circle = new Circle(event.pageX, event.pageY)
+    state.circle = new Circle(state.points, state.parallelogram)
   }
 
   draw();
